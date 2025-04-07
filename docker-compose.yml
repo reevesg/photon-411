@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - PYTHONUNBUFFERED=1
+      # Read raw JSON credentials from file
+      - GOOGLE_CREDENTIALS_JSON=${GOOGLE_CREDENTIALS_JSON:-$$(cat credentials/service_account.json)}
+      - SPREADSHEET_ID=1I9C7TksCSE9EZ6TgrHGQP4r1zg24Y9g9q4joG3m9Uzw
+    volumes:
+      - .:/app  # Keep this for hot-reloading during development
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

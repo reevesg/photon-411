@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "photon"
+version = "0.1.0"
+description = "A web application that displays data from Google Spreadsheets"
+authors = ["Your Name <your.email@example.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Flask = "2.3.3"
+google-api-python-client = "2.97.0"
+google-auth = "2.22.0"
+google-auth-oauthlib = "1.0.0"
+google-auth-httplib2 = "^0.2.0"
+python-dotenv = "^1.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
