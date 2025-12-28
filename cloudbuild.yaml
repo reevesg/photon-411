@@ -22,7 +22,7 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'GOOGLE_CREDENTIALS=$(cat credentials/service_account.json)'
+      - 'GOOGLE_CREDENTIALS=$(cat credentials/service_account.json),SPREADSHEET_ID=1APFhedHVWzf3fJRTOtUeTEId0Lp2dNPzBP91td5I5oQ'
 
 images:
   - 'gcr.io/$PROJECT_ID/photon'

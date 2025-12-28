@@ -17,40 +17,20 @@ app = Flask(__name__)
 
 # Configure Google Sheets API
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-CREDENTIALS_JSON = os.getenv('GOOGLE_CREDENTIALS_JSON')
+CREDENTIALS_PATH = 'credentials/service_account.json'
 SPREADSHEET_ID = os.getenv('SPREADSHEET_ID')
 
 def get_google_sheets_service():
     logging.info(f"Spreadsheet ID: {SPREADSHEET_ID}")
     
-    if not CREDENTIALS_JSON:
-        raise ValueError("GOOGLE_CREDENTIALS_JSON environment variable is required")
+    if not os.path.exists(CREDENTIALS_PATH):
+        raise ValueError(f"Credentials file not found at: {CREDENTIALS_PATH}")
         
     try:
-        import json
-        import tempfile
-        
-        # Parse JSON
-        try:
-            creds_dict = json.loads(CREDENTIALS_JSON)
-            logging.info("Successfully parsed credentials JSON")
-        except json.JSONDecodeError as je:
-            logging.error(f"Failed to parse credentials JSON: {je}")
-            raise ValueError("Invalid JSON in credentials") from je
-        
-        # Write to temporary file
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-            json.dump(creds_dict, temp_file)
-            temp_path = temp_file.name
-            logging.info(f"Wrote credentials to temporary file: {temp_path}")
-        
-        try:
-            credentials = service_account.Credentials.from_service_account_file(
-                temp_path, scopes=SCOPES)
-            logging.info(f"Successfully loaded credentials for: {credentials.service_account_email}")
-            return build('sheets', 'v4', credentials=credentials)
-        finally:
-            os.unlink(temp_path)  # Always clean up the temp file
+        credentials = service_account.Credentials.from_service_account_file(
+            CREDENTIALS_PATH, scopes=SCOPES)
+        logging.info(f"Successfully loaded credentials for: {credentials.service_account_email}")
+        return build('sheets', 'v4', credentials=credentials)
             
         logging.info(f"Service account email: {credentials.service_account_email}")
         return build('sheets', 'v4', credentials=credentials)
@@ -69,11 +49,10 @@ def races():
     try:
         service = get_google_sheets_service()
         
-        # Adjust range as needed
-        RANGE_NAME = 'Sheet1!A1:Z'
+        sheet = service.spreadsheets()
+        RANGE_NAME = 'Races!A1:Z'
         print(f"Fetching range: {RANGE_NAME}")
         
-        sheet = service.spreadsheets()
         print("Making API request...")
         result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
                                   range=RANGE_NAME).execute()
