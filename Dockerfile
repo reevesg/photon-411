@@ -1,26 +1,17 @@
-# Use Python 3.12 slim image
-FROM python:3.12-slim
+# Use Python 3.9 slim image for better compatibility
+FROM python:3.9-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install poetry
-RUN pip install poetry
-
-# Copy poetry files
-COPY pyproject.toml poetry.lock ./
-
-# Configure poetry to not create a virtual environment in the container
-RUN poetry config virtualenvs.create false
+# Copy requirements first for better caching
+COPY requirements.txt .
 
 # Install dependencies
-RUN poetry install
+RUN pip install -r requirements.txt gunicorn
 
 # Copy the application
 COPY . .
-
-# Install gunicorn
-RUN poetry add gunicorn
 
 # Make entrypoint executable
 RUN chmod +x docker-entrypoint.sh

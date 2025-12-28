@@ -17,22 +17,19 @@ app = Flask(__name__)
 
 # Configure Google Sheets API
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-CREDENTIALS_PATH = 'credentials/service_account.json'
-SPREADSHEET_ID = os.getenv('SPREADSHEET_ID')
+SPREADSHEET_ID = '1APFhedHVWzf3fJRTOtUeTEId0Lp2dNPzBP91td5I5oQ'  # Hardcoded spreadsheet ID
 
 def get_google_sheets_service():
     logging.info(f"Spreadsheet ID: {SPREADSHEET_ID}")
     
-    if not os.path.exists(CREDENTIALS_PATH):
-        raise ValueError(f"Credentials file not found at: {CREDENTIALS_PATH}")
+    credentials_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+    if not credentials_json:
+        raise ValueError("GOOGLE_CREDENTIALS_JSON environment variable not found")
         
     try:
-        credentials = service_account.Credentials.from_service_account_file(
-            CREDENTIALS_PATH, scopes=SCOPES)
+        credentials = service_account.Credentials.from_service_account_info(
+            eval(credentials_json), scopes=SCOPES)
         logging.info(f"Successfully loaded credentials for: {credentials.service_account_email}")
-        return build('sheets', 'v4', credentials=credentials)
-            
-        logging.info(f"Service account email: {credentials.service_account_email}")
         return build('sheets', 'v4', credentials=credentials)
     except Exception as e:
         logging.exception(f"Error loading credentials: {str(e)}")

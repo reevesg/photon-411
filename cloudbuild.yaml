@@ -21,8 +21,8 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
-      - '--set-env-vars'
-      - 'GOOGLE_CREDENTIALS=$(cat credentials/service_account.json),SPREADSHEET_ID=1APFhedHVWzf3fJRTOtUeTEId0Lp2dNPzBP91td5I5oQ'
+      - '--set-secrets'
+      - 'GOOGLE_CREDENTIALS_JSON=photon-sheets-creds:latest'
 
 images:
   - 'gcr.io/$PROJECT_ID/photon'
