@@ -35,6 +35,10 @@ def get_google_sheets_service():
         logging.exception(f"Error loading credentials: {str(e)}")
         raise
 
+@app.route('/health')
+def health_check():
+    return {'status': 'healthy'}, 200
+
 @app.route('/')
 def index():
     logging.info("Fetching home data...")
@@ -49,6 +53,11 @@ def about():
 def crew():
     logging.info("Rendering crew page...")
     return render_template('crew.html')
+
+@app.route('/socials')
+def socials():
+    logging.info("Rendering socials page...")
+    return render_template('socials.html')
 
 @app.route('/races')
 def races():

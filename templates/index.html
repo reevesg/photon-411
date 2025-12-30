@@ -65,7 +65,7 @@
             height: 100vh;
             z-index: -1;
             overflow: hidden;
-            background-image: url("{{ url_for('static', filename='images/photon-light-air.JPG') }}");
+            background-image: url("{{ url_for('static', filename='images/photon-light-air.jpg') }}");
             background-size: cover;
             background-position: center;
         }
@@ -207,6 +207,40 @@
             object-fit: cover;
             object-position: center;
         }
+        .welcome-section {
+            text-align: center;
+            padding-bottom: 200px;
+            position: relative;
+            z-index: 1;
+        }
+        .scroll-indicator {
+            margin-top: 3rem;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+        .scroll-indicator svg {
+            width: 32px;
+            height: 32px;
+            stroke: white;
+            stroke-width: 2;
+            opacity: 0.9;
+            transition: all 0.3s ease;
+        }
+        .scroll-indicator:hover svg {
+            opacity: 1;
+            transform: translateY(5px);
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(8px);
+            }
+            60% {
+                transform: translateY(4px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -221,6 +255,7 @@
                 <a href="{{ url_for('races') }}" class="nav-link">Races</a>
                 <a href="{{ url_for('about') }}" class="nav-link">About</a>
                 <a href="{{ url_for('crew') }}" class="nav-link">Join Us</a>
+                <a href="{{ url_for('socials') }}" class="nav-link">Socials</a>
             </div>
         </div>
     </nav>
@@ -231,10 +266,15 @@
     <div class="wrapper">
         <!-- Main Content -->
         <main class="content">
-            <section class="min-vh-100 d-flex align-items-end" style="padding-bottom: calc(3rem + 100px);">
+            <section class="min-vh-100 d-flex align-items-end welcome-section" style="padding-bottom: calc(3rem + 100px);">
                 <div class="container">
                     <div class="text-center text-white px-4">
                         <h1 class="display-2">SAILING PHOTON</h1>
+                        <div class="scroll-indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5v14M5 12l7 7 7-7"/>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </section>
