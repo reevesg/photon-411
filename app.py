@@ -40,6 +40,16 @@ def index():
     logging.info("Fetching home data...")
     return render_template('index.html')
 
+@app.route('/about')
+def about():
+    logging.info("Rendering about page...")
+    return render_template('about.html')
+
+@app.route('/crew')
+def crew():
+    logging.info("Rendering crew page...")
+    return render_template('crew.html')
+
 @app.route('/races')
 def races():
     logging.info("Fetching race data...")
