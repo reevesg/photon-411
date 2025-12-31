@@ -59,6 +59,16 @@ def socials():
     logging.info("Rendering socials page...")
     return render_template('socials.html')
 
+@app.route('/blog')
+def blog():
+    logging.info("Rendering blog listing page...")
+    return render_template('blog.html')
+
+@app.route('/blog/new-for-2026')
+def blog_new_for_2026():
+    logging.info("Rendering blog post: New for 2026")
+    return render_template('blog/new-for-2026.html')
+
 @app.route('/races')
 def races():
     logging.info("Fetching race data...")

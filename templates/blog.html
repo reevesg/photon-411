@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Sailing Photon - Blog{% endblock %}
+
+{% block styles %}
+<style>
+    body { 
+        background: #f8f9fa;
+    }
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    .blog-card {
+        height: 100%;
+        background: white;
+    }
+    .blog-card .card-body {
+        padding: 2rem;
+    }
+    .blog-date {
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .blog-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        color: #1a237e;
+        margin-bottom: 1rem;
+    }
+    .blog-excerpt {
+        color: #444;
+        margin-bottom: 1.5rem;
+    }
+    .blog-link {
+        text-decoration: none;
+        color: inherit;
+    }
+    .blog-link:hover {
+        color: inherit;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="text-center mb-5">Latest Updates</h1>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <a href="{{ url_for('blog_new_for_2026') }}" class="blog-link">
+                        <div class="card blog-card">
+                            <div class="card-body">
+                                <div class="blog-date">December 31, 2025</div>
+                                <h2 class="blog-title h3">New for 2026: Photon Comes to Chicago</h2>
+                                <p class="blog-excerpt">We're excited to share a major update for the 2026 season — Photon is moving to Chicago. After several successful years racing out of Michigan City, we're bringing the program north to be closer to the heart of the Chicago sailing scene...</p>
+                                <span class="btn btn-primary">Read More</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

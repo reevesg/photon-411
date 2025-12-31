@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}New for 2026: Photon Comes to Chicago - Sailing Photon Blog{% endblock %}
+
+{% block styles %}
+<style>
+    body { 
+        background: #f8f9fa;
+    }
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .blog-post {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #333;
+    }
+    .blog-post p {
+        margin-bottom: 1.5rem;
+    }
+    .blog-post h2 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        color: #1a237e;
+        margin-top: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    .blog-post ul {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+    .blog-post ul li {
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    .blog-post .cta-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 2rem 0;
+    }
+    .blog-post .cta-link .emoji {
+        font-size: 1.5rem;
+    }
+    .blog-post .cta-link a {
+        color: #1a237e;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border: 2px solid #1a237e;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .blog-post .cta-link a:hover {
+        background: #1a237e;
+        color: white;
+    }
+    .blog-date {
+        font-size: 1rem;
+        color: #666;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .blog-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        color: #1a237e;
+        margin-bottom: 2rem;
+    }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        color: #1a237e;
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease;
+    }
+    .back-link:hover {
+        transform: translateX(-5px);
+    }
+    .back-link svg {
+        width: 20px;
+        height: 20px;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <a href="{{ url_for('blog') }}" class="back-link">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Blog
+            </a>
+            <article class="card">
+                <div class="card-body blog-post">
+                    <div class="blog-date">December 31, 2025</div>
+                    <h1 class="blog-title">New for 2026: Photon Comes to Chicago</h1>
+                    
+                    <p>We're excited to share a major update for the 2026 season — Photon is moving to Chicago.</p>
+
+                    <p>After several successful years racing out of Michigan City, we're bringing the program north to be closer to the heart of the Chicago sailing scene. This move allows us to expand the campaign while staying focused on what we do best: competitive distance racing paired with consistent, high-quality weeknight sailing.</p>
+
+                    <h2>Racing in 2026</h2>
+
+                    <p>In 2026, Photon will compete in Chicago's Wednesday night beer can series, providing regular, repeatable racing that sharpens skills and builds cohesion. We'll also continue to campaign in the major Lake Michigan distance races that have long defined the program.</p>
+
+                    <p>Our home base is still being finalized, with plans to berth either on a can in Monroe Harbor or at a dock in DuSable Harbor, both offering excellent access to the Chicago racecourse.</p>
+
+                    <h2>Growing the Team</h2>
+
+                    <p>As part of this move, we're expanding the crew. Our experienced Michigan City sailors will continue racing with the team, and we're excited to welcome Chicago-based sailors who want to be part of a committed, performance-driven program.</p>
+
+                    <p>We value:</p>
+                    <ul>
+                        <li>Consistent participation and reliability</li>
+                        <li>Strong communication and teamwork</li>
+                        <li>A data-driven approach to improvement</li>
+                        <li>A positive, inclusive team culture</li>
+                    </ul>
+
+                    <h2>Join Us</h2>
+
+                    <p>If you're interested in sailing with Photon, we'd love to hear from you.</p>
+
+                    <p>Learn more about the team and how to get involved on our Join Us page:</p>
+
+                    <p class="cta-link">
+                        <span class="emoji">👉</span> 
+                        <a href="{{ url_for('crew') }}">Join the Photon Team</a>
+                    </p>
+
+                    <p>From there, you can connect with us, learn about expectations, and join our community as we build the next chapter of the Photon campaign.</p>
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
+{% endblock %}
