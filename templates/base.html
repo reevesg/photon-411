@@ -32,6 +32,100 @@
             left: 0;
             z-index: 1030;
         }
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 1rem;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+            .navbar-collapse:not(.show) {
+                display: none;
+            }
+            .navbar-collapse .nav {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            .navbar-collapse .nav-link {
+                padding: 0.75rem 1rem;
+                width: 100%;
+                text-align: center;
+            }
+            body.is-home .navbar-collapse {
+                background: rgba(0, 0, 0, 0.8);
+            }
+        }
+        @media (min-width: 992px) {
+            .navbar-collapse {
+                display: flex !important;
+            }
+            .navbar-collapse .nav {
+                flex-direction: row;
+                align-items: center;
+                height: 100%;
+            }
+            .navbar-collapse .nav-link {
+                width: auto;
+                text-align: left;
+                height: 100%;
+                display: flex;
+                align-items: center;
+            }
+        }
+        .navbar-toggler {
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            position: relative;
+            background: none;
+        }
+        .navbar-toggler:focus {
+            box-shadow: none;
+            outline: none;
+        }
+        .navbar-toggler-icon {
+            background-image: none;
+            position: relative;
+            width: 24px;
+            height: 2px;
+            background: currentColor;
+            transition: background-color 0.3s;
+            margin: 14px auto;
+        }
+        .navbar-toggler-icon::before,
+        .navbar-toggler-icon::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 24px;
+            height: 2px;
+            background: currentColor;
+            transition: transform 0.3s;
+        }
+        .navbar-toggler-icon::before {
+            top: -8px;
+        }
+        .navbar-toggler-icon::after {
+            bottom: -8px;
+        }
+        .navbar-toggler[aria-expanded='true'] .navbar-toggler-icon {
+            background: transparent;
+        }
+        .navbar-toggler[aria-expanded='true'] .navbar-toggler-icon::before {
+            transform: translateY(8px) rotate(45deg);
+        }
+        .navbar-toggler[aria-expanded='true'] .navbar-toggler-icon::after {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+        body.is-home .navbar-toggler {
+            color: white;
+        }
         .navbar .logo {
             height: 50px;
             width: auto;
@@ -168,17 +262,24 @@
 <body class="{% if request.endpoint == 'index' %}is-home{% endif %}">
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="container-fluid d-flex align-items-center">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='images/photon-logo.png') }}" alt="Photon Logo" class="logo">
-            </a>
-            <div class="nav ms-auto">
-                <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a>
-                <a href="{{ url_for('races') }}" class="nav-link {% if request.endpoint == 'races' %}active{% endif %}">Races</a>
-                <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">About</a>
-                <a href="{{ url_for('crew') }}" class="nav-link {% if request.endpoint == 'crew' %}active{% endif %}">Join Us</a>
-                <a href="{{ url_for('socials') }}" class="nav-link {% if request.endpoint == 'socials' %}active{% endif %}">Socials</a>
-                <a href="{{ url_for('blog') }}" class="nav-link {% if request.endpoint == 'blog' or 'blog_' in request.endpoint %}active{% endif %}">Blog</a>
+        <div class="container-fluid">
+            <div class="d-flex align-items-center justify-content-between w-100 h-100">
+                <a class="navbar-brand" href="{{ url_for('index') }}">
+                    <img src="{{ url_for('static', filename='images/photon-logo.png') }}" alt="Photon Logo" class="logo">
+                </a>
+                <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <div class="nav ms-auto">
+                        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a>
+                        <a href="{{ url_for('races') }}" class="nav-link {% if request.endpoint == 'races' %}active{% endif %}">Races</a>
+                        <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">About</a>
+                        <a href="{{ url_for('crew') }}" class="nav-link {% if request.endpoint == 'crew' %}active{% endif %}">Join Us</a>
+                        <a href="{{ url_for('socials') }}" class="nav-link {% if request.endpoint == 'socials' %}active{% endif %}">Socials</a>
+                        <a href="{{ url_for('blog') }}" class="nav-link {% if request.endpoint == 'blog' or 'blog_' in request.endpoint %}active{% endif %}">Blog</a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
