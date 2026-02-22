@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 import os
 import sys
 import logging
+import calendar
+from datetime import datetime, timedelta
 
 # Set up logging
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
@@ -14,6 +16,16 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
 load_dotenv()
 
 app = Flask(__name__)
+
+@app.template_filter('parse_date')
+def parse_date_filter(date_str):
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d')
+    except ValueError:
+        try:
+            return datetime.strptime(date_str, '%m/%d/%Y')
+        except ValueError:
+            return None
 
 # Configure Google Sheets API
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
@@ -69,42 +81,94 @@ def blog_new_for_2026():
     logging.info("Rendering blog post: New for 2026")
     return render_template('blog/new-for-2026.html')
 
+def get_month_calendar(year, month):
+    # Set first day of week to Monday (0 = Monday, 6 = Sunday)
+    calendar.setfirstweekday(calendar.MONDAY)
+    cal = calendar.monthcalendar(year, month)
+    month_name = calendar.month_name[month]
+    return {
+        'name': month_name,
+        'weeks': cal,
+        'year': year,
+        'month': month
+    }
+
+def parse_date(date_str):
+    if not date_str:
+        return None
+    # Try multiple date formats
+    formats = ['%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', '%d/%m/%Y', '%Y/%m/%d']
+    for fmt in formats:
+        try:
+            return datetime.strptime(str(date_str).strip(), fmt)
+        except ValueError:
+            continue
+    return None
+
+def get_race_events(data, headers):
+    logging.info(f"Headers: {headers}")
+    date_col = headers.index('Date') if 'Date' in headers else 0
+    # Column C is index 2 (A=0, B=1, C=2)
+    time_col = 2 if len(headers) > 2 else (headers.index('Dock Off') if 'Dock Off' in headers else -1)
+    # Column D is index 3 (A=0, B=1, C=2, D=3)
+    name_col = 3 if len(headers) > 3 else (headers.index('Race') if 'Race' in headers else 1)
+    location_col = headers.index('Location') if 'Location' in headers else -1
+    events = {}
+    
+    logging.info(f"Column indices - Date: {date_col}, Race: {name_col}, Time: {time_col}, Location: {location_col}")
+    
+    for row in data:
+        if len(row) > date_col:
+            date = parse_date(row[date_col])
+            if date:
+                event_name = row[name_col] if len(row) > name_col else 'Race Event'
+                event_time = row[time_col] if time_col >= 0 and len(row) > time_col else ''
+                event_location = row[location_col] if location_col >= 0 and len(row) > location_col else ''
+                
+                event_details = event_name
+                if event_time:
+                    event_details += f' - {event_time}'
+                if event_location:
+                    event_details += f' @ {event_location}'
+                
+                date_key = date.strftime('%Y-%m-%d')
+                if date_key not in events:
+                    events[date_key] = []
+                events[date_key].append(event_details)
+                logging.info(f"Added event: {date_key} -> {event_details}")
+    
+    logging.info(f"Total events: {len(events)}")
+    return events
+
 @app.route('/races')
 def races():
-    logging.info("Fetching race data...")
     try:
+        # Call the Sheets API
         service = get_google_sheets_service()
-        
-        sheet = service.spreadsheets()
-        RANGE_NAME = 'Races!A1:Z'
-        print(f"Fetching range: {RANGE_NAME}")
-        
-        print("Making API request...")
-        result = sheet.values().get(spreadsheetId=SPREADSHEET_ID,
-                                  range=RANGE_NAME).execute()
-        print("API request successful")
+        spreadsheet = service.spreadsheets()
+        result = spreadsheet.values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range='Races!A1:Z1000'
+        ).execute()
         values = result.get('values', [])
-        
+
         if not values:
-            return render_template('index.html', error='No data found.')
-            
+            return render_template('races.html', error='No data found.')
+
         headers = values[0]
-        # Convert string boolean values to actual booleans
-        processed_data = []
-        for row in values[1:]:
-            processed_row = []
-            for cell in row:
-                # Convert string boolean values to Python booleans
-                if isinstance(cell, str):
-                    cell_upper = cell.strip().upper()
-                    if cell_upper in ['TRUE', 'FALSE']:
-                        processed_row.append(cell_upper == 'TRUE')
-                    else:
-                        processed_row.append(cell)
-                else:
-                    processed_row.append(cell)
-            processed_data.append(processed_row)
-        return render_template('races.html', headers=headers, data=processed_data)
+        
+        # Process race events
+        race_events = get_race_events(values[1:], headers)
+        
+        # Generate calendars for May through October
+        calendars = [get_month_calendar(2026, month) for month in range(5, 11)]
+
+        return render_template('races.html', 
+                             headers=headers, 
+                             data=values[1:], 
+                             calendars=calendars, 
+                             race_events=race_events)
+
     except Exception as e:
         return render_template('races.html', error=str(e))
 

@@ -25,7 +25,104 @@
     .table td {
         vertical-align: middle;
     }
+    .view-toggle {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    .view-toggle .btn {
+        margin: 0 0.5rem;
+    }
+    .calendar-month {
+        margin-bottom: 2rem;
+    }
+    .calendar-grid {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .calendar-grid table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 3px;
+        table-layout: fixed;
+    }
+    .calendar-grid th {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        color: #1a237e;
+        padding: 0.75rem;
+        text-align: center;
+    }
+    .calendar-grid td {
+        padding: 0.5rem;
+        text-align: left;
+        border-radius: 8px;
+        position: relative;
+        height: 100px;
+        vertical-align: top;
+    }
+    .calendar-grid td.has-event {
+        background: rgba(26, 35, 126, 0.1);
+    }
+    .calendar-grid td.other-month {
+        color: #aaa;
+    }
+    .calendar-grid .day-number {
+        font-weight: 700;
+        color: #1a237e;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+    .calendar-grid .event-name {
+        font-size: 0.75rem;
+        color: #333;
+        line-height: 1.3;
+        word-wrap: break-word;
+    }
+    .calendar-month h3 {
+        color: #1a237e;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+    }
+    .race-event {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border-left: 4px solid #1a237e;
+    }
+    .race-event .date {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        color: #1a237e;
+        margin-bottom: 0.5rem;
+    }
+    .race-event .title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .race-event .details {
+        color: #546e7a;
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
 </style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleView(view) {
+    document.getElementById('calendar-grid-view').style.display = view === 'calendar' ? 'block' : 'none';
+    document.getElementById('table-view').style.display = view === 'table' ? 'block' : 'none';
+    document.getElementById('btn-calendar').classList.toggle('btn-primary', view === 'calendar');
+    document.getElementById('btn-calendar').classList.toggle('btn-outline-primary', view !== 'calendar');
+    document.getElementById('btn-table').classList.toggle('btn-primary', view === 'table');
+    document.getElementById('btn-table').classList.toggle('btn-outline-primary', view !== 'table');
+}
+</script>
 {% endblock %}
 
 {% block content %}
@@ -54,15 +151,77 @@
         <div class="col-lg-10">
             <div class="card">
                 <div class="card-body text-center">
-                    <h1 class="mb-3">2026 Race Schedule</h1>
-                    <p class="lead mb-0">The 2026 race schedule is currently being finalized. Check back for updates as races are confirmed.</p>
+                    <h1 class="mb-0">2026 Race Schedule</h1>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% if headers and data %}
-<div class="table-responsive">
+
+<div class="view-toggle">
+    <button id="btn-calendar" class="btn btn-primary" onclick="toggleView('calendar')">Calendar View</button>
+    <button id="btn-table" class="btn btn-outline-primary" onclick="toggleView('table')">Table View</button>
+</div>
+
+<div id="calendar-grid-view">
+    <div class="container mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                {% for calendar in calendars %}
+                <div class="calendar-grid mb-5">
+                    <h3 class="mb-4">{{ calendar.name }} {{ calendar.year }}</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mon</th>
+                                <th>Tue</th>
+                                <th>Wed</th>
+                                <th>Thu</th>
+                                <th>Fri</th>
+                                <th>Sat</th>
+                                <th>Sun</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for week in calendar.weeks %}
+                            <tr>
+                                {% for day in week %}
+                                {% if day != 0 %}
+                                {% set date_str = '%d-%02d-%02d'|format(calendar.year, calendar.month, day) %}
+                                <td {% if date_str in race_events %}class="has-event"{% endif %}>
+                                    <div class="day-number">{{ day }}</div>
+                                    {% if date_str in race_events %}
+                                    <div class="event-name">
+                                        {% for event in race_events[date_str] %}
+                                        {{ event }}{% if not loop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                {% else %}
+                                <td class="other-month"></td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Table View -->
+<div id="table-view" style="display: none;">
+    <div class="container mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h3 class="mb-4">Full Schedule</h3>
+                {% if headers and data %}
+                <div class="table-responsive">
     <table class="table table-striped table-hover">
         <thead class="table-dark">
             <tr>
@@ -83,4 +242,8 @@
     </table>
 </div>
 {% endif %}
+        </div>
+    </div>
+</div>
+</div>
 {% endblock %}
