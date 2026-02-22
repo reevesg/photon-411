@@ -122,6 +122,20 @@ function toggleView(view) {
     document.getElementById('btn-table').classList.toggle('btn-primary', view === 'table');
     document.getElementById('btn-table').classList.toggle('btn-outline-primary', view !== 'table');
 }
+
+function copyGoogleCalUrl() {
+    const instructions = document.getElementById('google-cal-instructions');
+    instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+}
+
+function copyToClipboard() {
+    const url = document.getElementById('ical-url').textContent;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('URL copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
+}
 </script>
 {% endblock %}
 
@@ -161,6 +175,23 @@ function toggleView(view) {
 <div class="view-toggle">
     <button id="btn-calendar" class="btn btn-primary" onclick="toggleView('calendar')">Calendar View</button>
     <button id="btn-table" class="btn btn-outline-primary" onclick="toggleView('table')">Table View</button>
+    <a href="webcal://{{ request.host }}/races.ics" class="btn btn-success">
+        <i class="bi bi-calendar-plus"></i> Subscribe (Apple Calendar)
+    </a>
+    <button class="btn btn-success" onclick="copyGoogleCalUrl()">
+        <i class="bi bi-google"></i> Subscribe (Google Calendar)
+    </button>
+    <div id="google-cal-instructions" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+        <p><strong>To add to Google Calendar:</strong></p>
+        <ol style="text-align: left; margin-left: 2rem;">
+            <li>Copy this URL: <code id="ical-url" style="background: white; padding: 0.25rem 0.5rem; border-radius: 4px;">https://{{ request.host }}/races.ics</code></li>
+            <li>Open <a href="https://calendar.google.com" target="_blank">Google Calendar</a></li>
+            <li>Click the <strong>+</strong> next to "Other calendars"</li>
+            <li>Select <strong>"From URL"</strong></li>
+            <li>Paste the URL and click <strong>"Add calendar"</strong></li>
+        </ol>
+        <button class="btn btn-sm btn-primary" onclick="copyToClipboard()">Copy URL</button>
+    </div>
 </div>
 
 <div id="calendar-grid-view">

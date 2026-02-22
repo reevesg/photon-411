@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, Response
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
@@ -7,6 +7,8 @@ import sys
 import logging
 import calendar
 from datetime import datetime, timedelta
+from icalendar import Calendar, Event
+import pytz
 
 # Set up logging
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
@@ -171,6 +173,105 @@ def races():
 
     except Exception as e:
         return render_template('races.html', error=str(e))
+
+@app.route('/races.ics')
+def races_ical():
+    try:
+        # Call the Sheets API
+        service = get_google_sheets_service()
+        spreadsheet = service.spreadsheets()
+        result = spreadsheet.values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range='Races!A1:Z1000'
+        ).execute()
+        values = result.get('values', [])
+
+        if not values:
+            return Response('No data found.', status=404)
+
+        headers = values[0]
+        data = values[1:]
+        
+        # Create iCal calendar
+        cal = Calendar()
+        cal.add('prodid', '-//Sailing Photon Race Calendar//sailingphoton.com//')
+        cal.add('version', '2.0')
+        cal.add('x-wr-calname', 'Sailing Photon 2026 Races')
+        cal.add('x-wr-caldesc', 'Race schedule for Sailing Photon')
+        
+        # Get column indices
+        date_col = headers.index('Date') if 'Date' in headers else 0
+        time_col = 2  # Column C - Dock Off
+        name_col = 3  # Column D - Race name
+        location_col = headers.index('Location') if 'Location' in headers else -1
+        
+        # Add events
+        for row in data:
+            if len(row) > date_col:
+                date = parse_date(row[date_col])
+                if date:
+                    event = Event()
+                    
+                    # Event name
+                    event_name = row[name_col] if len(row) > name_col else 'Race Event'
+                    event.add('summary', event_name)
+                    
+                    # Event time - parse dock off time
+                    event_time = row[time_col] if time_col >= 0 and len(row) > time_col else ''
+                    
+                    # Try to parse time (e.g., "9:00 AM" or "09:00")
+                    if event_time:
+                        try:
+                            # Try parsing common time formats
+                            for time_fmt in ['%I:%M %p', '%H:%M', '%I:%M%p']:
+                                try:
+                                    time_obj = datetime.strptime(event_time.strip(), time_fmt).time()
+                                    start_datetime = datetime.combine(date.date(), time_obj)
+                                    break
+                                except ValueError:
+                                    continue
+                            else:
+                                # If no time format worked, use 9 AM as default
+                                start_datetime = datetime.combine(date.date(), datetime.strptime('09:00', '%H:%M').time())
+                        except:
+                            start_datetime = datetime.combine(date.date(), datetime.strptime('09:00', '%H:%M').time())
+                    else:
+                        # Default to 9 AM if no time specified
+                        start_datetime = datetime.combine(date.date(), datetime.strptime('09:00', '%H:%M').time())
+                    
+                    # Set timezone to Central Time
+                    central = pytz.timezone('America/Chicago')
+                    start_datetime = central.localize(start_datetime)
+                    
+                    event.add('dtstart', start_datetime)
+                    # Assume 4 hour duration for races
+                    event.add('dtend', start_datetime + timedelta(hours=4))
+                    
+                    # Location
+                    if location_col >= 0 and len(row) > location_col:
+                        event.add('location', row[location_col])
+                    
+                    # Description with dock off time
+                    description = f"Dock Off: {event_time}" if event_time else "Race Event"
+                    event.add('description', description)
+                    
+                    # Add unique ID
+                    event.add('uid', f"{date.strftime('%Y%m%d')}-{event_name.replace(' ', '-')}@sailingphoton.com")
+                    
+                    cal.add_component(event)
+        
+        # Return iCal file
+        return Response(
+            cal.to_ical(),
+            mimetype='text/calendar',
+            headers={
+                'Content-Disposition': 'attachment; filename=sailing-photon-races.ics'
+            }
+        )
+    
+    except Exception as e:
+        logging.error(f"Error generating iCal: {str(e)}")
+        return Response(f'Error generating calendar: {str(e)}', status=500)
 
 if __name__ == '__main__':
     # Only enable debug mode in development
