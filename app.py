@@ -1,14 +1,17 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, abort
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
+from markupsafe import Markup
 import os
 import sys
 import logging
 import calendar
+import re
 from datetime import datetime, timedelta
 from icalendar import Calendar, Event
 import pytz
+import markdown
 
 # Set up logging
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
@@ -272,6 +275,48 @@ def races_ical():
     except Exception as e:
         logging.error(f"Error generating iCal: {str(e)}")
         return Response(f'Error generating calendar: {str(e)}', status=500)
+
+CHECKLISTS = [
+    {'slug': 'delivery',        'title': 'Delivery',        'filename': 'Delivery.md'},
+    {'slug': 'dock-off',        'title': 'Dock Off',        'filename': 'Dock Off.md'},
+    {'slug': 'gybing',          'title': 'Gybing',          'filename': 'Gybing.md'},
+    {'slug': 'headsail-change', 'title': 'Headsail Change', 'filename': 'Headsail Change.md'},
+    {'slug': 'jib-trim',        'title': 'Jib Trim',        'filename': 'Jib Trim.md'},
+    {'slug': 'kite-douse',      'title': 'Kite Douse',      'filename': 'Kite Douse.md'},
+    {'slug': 'kite-peel',       'title': 'Kite Peel',       'filename': 'Kite Peel.md'},
+    {'slug': 'kite-set',        'title': 'Kite Set',        'filename': 'Kite Set.md'},
+    {'slug': 'main-drop',       'title': 'Main Drop',       'filename': 'Main Drop.md'},
+    {'slug': 'main-hoist',      'title': 'Main Hoist',      'filename': 'Main Hoist.md'},
+    {'slug': 'main-trim',       'title': 'Main Trim',       'filename': 'Main Trim.md'},
+    {'slug': 'man-overboard',   'title': 'Man Overboard',   'filename': 'Man Overboard.md'},
+    {'slug': 'post-race',       'title': 'Post-Race',       'filename': 'Post-Race.md'},
+    {'slug': 'pre-start',       'title': 'Pre-Start',       'filename': 'Pre-Start.md'},
+    {'slug': 'reefing',         'title': 'Reefing',         'filename': 'Reefing.md'},
+    {'slug': 'tacking',         'title': 'Tacking',         'filename': 'Tacking.md'},
+]
+
+CHECKLIST_DIR = os.path.join(os.path.dirname(__file__), 'checklists')
+
+def _render_checklist_md(text):
+    # Convert task list items to interactive checkboxes before markdown processing
+    text = re.sub(r'^(\s*)- \[ \] ', r'\1- <input type="checkbox" class="task-check"> ', text, flags=re.MULTILINE)
+    text = re.sub(r'^(\s*)- \[x\] ', r'\1- <input type="checkbox" class="task-check" checked> ', text, flags=re.MULTILINE)
+    return Markup(markdown.markdown(text, extensions=['tables']))
+
+@app.route('/checklists')
+def checklists_index():
+    return render_template('checklists.html', checklists=CHECKLISTS)
+
+@app.route('/checklists/<slug>')
+def checklist_detail(slug):
+    item = next((c for c in CHECKLISTS if c['slug'] == slug), None)
+    if item is None:
+        abort(404)
+    path = os.path.join(CHECKLIST_DIR, item['filename'])
+    with open(path, 'r') as f:
+        content = _render_checklist_md(f.read())
+    return render_template('checklist_detail.html', title=item['title'], content=content, slug=slug)
+
 
 if __name__ == '__main__':
     # Only enable debug mode in development

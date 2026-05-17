@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Photon — {{ title }}{% endblock %}
+
+{% block styles %}
+<style>
+    .checklist-wrap {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        padding: 2rem;
+    }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #1a237e;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: -0.3px;
+        text-decoration: none;
+        margin-bottom: 1.5rem;
+    }
+    .back-link:hover { color: #3949ab; }
+
+    .checklist-content h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    .checklist-content h2 {
+        font-size: 1.15rem;
+        margin-top: 2rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid #e8eaf6;
+    }
+    .checklist-content h3 {
+        font-size: 0.95rem;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: #3949ab;
+    }
+    .checklist-content ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1rem 0;
+    }
+    .checklist-content ul li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 0.55rem 0.75rem;
+        border-radius: 8px;
+        margin-bottom: 0.25rem;
+        transition: background 0.1s;
+        line-height: 1.5;
+        color: #333;
+    }
+    .checklist-content ul li:hover {
+        background: #f5f5f5;
+    }
+    .checklist-content ul li.done {
+        color: #90a4ae;
+    }
+    .checklist-content ul li.done label {
+        text-decoration: line-through;
+    }
+    .task-check {
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        margin-top: 0.1rem;
+        cursor: pointer;
+        accent-color: #1a237e;
+    }
+    /* Non-task bullet items (roles, notes, etc.) */
+    .checklist-content ul li:not(:has(.task-check)) {
+        list-style: disc;
+        display: list-item;
+        margin-left: 1.5rem;
+    }
+    .checklist-content p {
+        color: #546e7a;
+        margin-bottom: 0.75rem;
+    }
+    .checklist-content blockquote {
+        border-left: 3px solid #c5cae9;
+        padding: 0.5rem 1rem;
+        margin: 1rem 0;
+        background: #f8f9ff;
+        border-radius: 0 8px 8px 0;
+        color: #546e7a;
+        font-style: italic;
+    }
+    .checklist-content blockquote p { margin-bottom: 0; }
+    .checklist-content hr {
+        border: none;
+        border-top: 1px solid #e8eaf6;
+        margin: 1.5rem 0;
+    }
+    /* Tables (trim guides) */
+    .checklist-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+    }
+    .checklist-content th {
+        background: #e8eaf6;
+        color: #1a237e;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        letter-spacing: -0.3px;
+        padding: 0.6rem 0.75rem;
+        text-align: left;
+    }
+    .checklist-content td {
+        padding: 0.55rem 0.75rem;
+        border-bottom: 1px solid #f0f0f0;
+        color: #333;
+        vertical-align: top;
+    }
+    .checklist-content tr:last-child td { border-bottom: none; }
+    .checklist-content strong { color: #1a237e; }
+    .checklist-content code {
+        background: #f0f0f0;
+        padding: 0.1em 0.3em;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+
+    /* Reset button */
+    .reset-btn {
+        background: none;
+        border: 2px solid #c5cae9;
+        color: #3949ab;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: -0.3px;
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .reset-btn:hover {
+        background: #e8eaf6;
+        border-color: #3949ab;
+    }
+    .checklist-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .checklist-header h1 { margin-bottom: 0; }
+
+    /* Mobile-friendly table scroll */
+    .table-scroll { overflow-x: auto; }
+
+    @media (max-width: 576px) {
+        .checklist-wrap { padding: 1.25rem; }
+        .task-check { width: 26px; height: 26px; min-width: 26px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <a href="/checklists" class="back-link">← All Checklists</a>
+            <div class="checklist-wrap">
+                <div class="checklist-header">
+                    <h1>{{ title }}</h1>
+                    <button class="reset-btn" onclick="resetChecklist()">Reset</button>
+                </div>
+                <div class="checklist-content" id="checklist-content">
+                    {{ content }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Wrap tables for horizontal scroll on mobile
+    document.querySelectorAll('.checklist-content table').forEach(t => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-scroll';
+        t.parentNode.insertBefore(wrapper, t);
+        wrapper.appendChild(t);
+    });
+
+    // Make list items with checkboxes toggle a done class on the <li>
+    document.querySelectorAll('.task-check').forEach(cb => {
+        const li = cb.closest('li');
+        cb.addEventListener('change', () => {
+            li.classList.toggle('done', cb.checked);
+            saveState();
+        });
+    });
+
+    // Persist checkbox state in sessionStorage (resets when tab closes)
+    const STORAGE_KEY = 'checklist-{{ slug }}';
+
+    function saveState() {
+        const state = {};
+        document.querySelectorAll('.task-check').forEach((cb, i) => {
+            state[i] = cb.checked;
+        });
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+        const raw = sessionStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        document.querySelectorAll('.task-check').forEach((cb, i) => {
+            if (state[i]) {
+                cb.checked = true;
+                cb.closest('li').classList.add('done');
+            }
+        });
+    }
+
+    function resetChecklist() {
+        document.querySelectorAll('.task-check').forEach(cb => {
+            cb.checked = false;
+            cb.closest('li').classList.remove('done');
+        });
+        sessionStorage.removeItem(STORAGE_KEY);
+    }
+
+    loadState();
+</script>
+{% endblock %}
