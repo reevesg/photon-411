@@ -22,6 +22,11 @@ load_dotenv()
 
 app = Flask(__name__)
 
+@app.template_filter('date_to_slug')
+def date_to_slug_filter(date_str):
+    d = parse_date(str(date_str))
+    return d.strftime('%Y%m%d') if d else ''
+
 @app.template_filter('parse_date')
 def parse_date_filter(date_str):
     try:
@@ -161,18 +166,31 @@ def races():
             return render_template('races.html', error='No data found.')
 
         headers = values[0]
-        
+
         # Process race events
         race_events = get_race_events(values[1:], headers)
-        
+
+        # Find next upcoming race
+        today = datetime.now().date()
+        next_race = None
+        for row in values[1:]:
+            if not row:
+                continue
+            d = parse_date(row[0])
+            if d and d.date() >= today:
+                name = row[3].strip() if len(row) > 3 and row[3].strip() else 'Race'
+                next_race = {'slug': d.strftime('%Y%m%d'), 'name': name, 'date': d}
+                break
+
         # Generate calendars for May through October
         calendars = [get_month_calendar(2026, month) for month in range(5, 11)]
 
-        return render_template('races.html', 
-                             headers=headers, 
-                             data=values[1:], 
-                             calendars=calendars, 
-                             race_events=race_events)
+        return render_template('races.html',
+                             headers=headers,
+                             data=values[1:],
+                             calendars=calendars,
+                             race_events=race_events,
+                             next_race=next_race)
 
     except Exception as e:
         return render_template('races.html', error=str(e))
@@ -275,6 +293,88 @@ def races_ical():
     except Exception as e:
         logging.error(f"Error generating iCal: {str(e)}")
         return Response(f'Error generating calendar: {str(e)}', status=500)
+
+CREW_COLUMNS = [
+    (7,  'Driver'),
+    (8,  'Main'),
+    (9,  'Bow'),
+    (10, 'Pit'),
+]
+TRIMMER_COLUMNS = [11, 12, 13, 14]
+EXTRA_COLUMNS   = [15, 16, 17, 18, 19, 20]
+
+@app.route('/races/<date_str>')
+def race_detail(date_str):
+    try:
+        race_date = datetime.strptime(date_str, '%Y%m%d')
+    except ValueError:
+        abort(404)
+
+    try:
+        service = get_google_sheets_service()
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range='Races!A1:Z1000'
+        ).execute()
+        values = result.get('values', [])
+    except Exception as e:
+        logging.exception('Error fetching race detail')
+        return render_template('race_detail.html', error=str(e))
+
+    if not values:
+        abort(404)
+
+    # Collect all dated rows sorted by date
+    dated_rows = []
+    for r in values[1:]:
+        if r and parse_date(r[0]):
+            dated_rows.append((parse_date(r[0]).date(), r))
+    dated_rows.sort(key=lambda x: x[0])
+
+    row = None
+    row_index = None
+    for i, (d, r) in enumerate(dated_rows):
+        if d == race_date.date():
+            row = r
+            row_index = i
+            break
+
+    if row is None:
+        abort(404)
+
+    def adjacent(i):
+        if i is None or not (0 <= i < len(dated_rows)):
+            return None
+        d, r = dated_rows[i]
+        def col_r(idx, default=''):
+            return r[idx].strip() if len(r) > idx and r[idx].strip() else default
+        return {'slug': d.strftime('%Y%m%d'), 'name': col_r(3, 'Race')}
+
+    prev_race = adjacent(row_index - 1) if row_index > 0 else None
+    next_race = adjacent(row_index + 1) if row_index < len(dated_rows) - 1 else None
+
+    def col(i, default=''):
+        return row[i].strip() if len(row) > i and row[i].strip() else default
+
+    crew = [{'role': label, 'name': col(i), 'missing': not col(i)} for i, label in CREW_COLUMNS]
+    trimmers = [col(i) for i in TRIMMER_COLUMNS]
+    extras   = [col(i) for i in EXTRA_COLUMNS]
+
+    race = {
+        'date':     race_date,
+        'weekday':  col(1),
+        'dock_off': col(2),
+        'name':     col(3, 'Race'),
+        'type':     col(4),
+        'location': col(5),
+        'count':    col(6),
+        'crew':     crew,
+        'trimmers': trimmers,
+        'extras':   extras,
+    }
+    return render_template('race_detail.html', race=race, date_str=date_str,
+                           prev_race=prev_race, next_race=next_race)
+
 
 CHECKLISTS = [
     {'slug': 'delivery',        'title': 'Delivery',        'filename': 'Delivery.md'},

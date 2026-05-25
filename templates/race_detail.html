@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Sailing Photon — {% if race %}{{ race.name }}{% else %}Race{% endif %}{% endblock %}
+
+{% block styles %}
+<style>
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #1a237e;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: -0.3px;
+        text-decoration: none;
+        margin-bottom: 1.5rem;
+    }
+    .back-link:hover { color: #3949ab; }
+
+    .race-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+    .race-nav a {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: -0.3px;
+        color: #1a237e;
+        text-decoration: none;
+        background: white;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        transition: box-shadow 0.15s;
+        max-width: 45%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .race-nav a:hover { box-shadow: 0 4px 12px rgba(26,35,126,0.12); color: #3949ab; }
+    .race-nav .spacer { flex: 1; }
+    .race-header {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    .race-header h1 {
+        margin-bottom: 0.4rem;
+    }
+    .race-meta {
+        color: #546e7a;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    .race-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .race-badge {
+        background: #e8eaf6;
+        color: #1a237e;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: -0.2px;
+        padding: 0.3rem 0.75rem;
+        border-radius: 20px;
+    }
+    .race-badge.count { background: #e8f5e9; color: #2e7d32; }
+
+    .section-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+    .section-card h2 {
+        font-size: 1rem;
+        margin-bottom: 1.25rem;
+        color: #1a237e;
+    }
+
+    /* Key roles grid */
+    .roles-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    .role-card {
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        background: #f8f9ff;
+        border: 2px solid #e8eaf6;
+    }
+    .role-card.missing {
+        background: #fafafa;
+        border: 2px dashed #cfd8dc;
+    }
+    .role-label {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: -0.2px;
+        color: #90a4ae;
+        margin-bottom: 0.25rem;
+    }
+    .role-name {
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: #1a237e;
+    }
+    .role-name.missing { color: #b0bec5; font-style: italic; }
+
+    /* Crew chips */
+    .crew-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+    .crew-chip {
+        background: #e8eaf6;
+        color: #1a237e;
+        font-weight: 600;
+        font-size: 0.92rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+    }
+    .crew-chip.missing {
+        background: #fafafa;
+        color: #b0bec5;
+        border: 1px dashed #cfd8dc;
+        font-style: italic;
+    }
+
+    @media (max-width: 576px) {
+        .roles-grid { grid-template-columns: 1fr 1fr; }
+        .race-header { padding: 1.25rem; }
+        .section-card { padding: 1.25rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="race-nav">
+                {% if prev_race %}
+                <a href="/races/{{ prev_race.slug }}" title="{{ prev_race.name }}">← {{ prev_race.name }}</a>
+                {% else %}
+                <span class="spacer"></span>
+                {% endif %}
+                <a href="/races" style="max-width: none; background: none; box-shadow: none; font-size: 0.78rem; color: #90a4ae;">Schedule</a>
+                {% if next_race %}
+                <a href="/races/{{ next_race.slug }}" title="{{ next_race.name }}" style="text-align: right;">{{ next_race.name }} →</a>
+                {% else %}
+                <span class="spacer"></span>
+                {% endif %}
+            </div>
+
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% elif race %}
+
+            <div class="race-header">
+                <h1>{{ race.name }}</h1>
+                <p class="race-meta">
+                    {{ race.weekday }}, {{ race.date.strftime('%B %-d, %Y') }}
+                    {% if race.dock_off %} &middot; Dock Off {{ race.dock_off }}{% endif %}
+                </p>
+                <div class="race-badges">
+                    {% if race.type %}<span class="race-badge">{{ race.type }}</span>{% endif %}
+                    {% if race.location %}<span class="race-badge">{{ race.location }}</span>{% endif %}
+                    {% if race.count %}<span class="race-badge count">{{ race.count }} crew</span>{% endif %}
+                </div>
+            </div>
+
+            <!-- Key roles -->
+            <div class="section-card">
+                <h2>Key Roles</h2>
+                <div class="roles-grid">
+                    {% for r in race.crew %}
+                    <div class="role-card {% if r.missing %}missing{% endif %}">
+                        <div class="role-label">{{ r.role }}</div>
+                        <div class="role-name {% if r.missing %}missing{% endif %}">
+                            {{ r.name if r.name else 'TBD' }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Trimmers -->
+            {% set filled_trimmers = race.trimmers | reject('equalto', '') | reject('equalto', 'Missing') | list %}
+            {% set missing_trimmers = race.trimmers | select('equalto', 'Missing') | list %}
+            <div class="section-card">
+                <h2>Trimmers</h2>
+                <div class="crew-chips">
+                    {% for name in race.trimmers %}
+                        {% if name and name != 'Missing' %}
+                        <span class="crew-chip">{{ name }}</span>
+                        {% elif name == 'Missing' %}
+                        <span class="crew-chip missing">TBD</span>
+                        {% endif %}
+                    {% endfor %}
+                    {% if not filled_trimmers and not missing_trimmers %}
+                    <span class="crew-chip missing">None assigned</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Extras -->
+            {% set filled_extras = race.extras | reject('equalto', '') | reject('equalto', 'Missing') | list %}
+            {% if filled_extras or race.extras | select('equalto', 'Missing') | list %}
+            <div class="section-card">
+                <h2>Extras</h2>
+                <div class="crew-chips">
+                    {% for name in race.extras %}
+                        {% if name and name != 'Missing' %}
+                        <span class="crew-chip">{{ name }}</span>
+                        {% elif name == 'Missing' %}
+                        <span class="crew-chip missing">TBD</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="race-nav" style="margin-bottom: 0; margin-top: 0.5rem;">
+                {% if prev_race %}
+                <a href="/races/{{ prev_race.slug }}" title="{{ prev_race.name }}">← {{ prev_race.name }}</a>
+                {% else %}
+                <span class="spacer"></span>
+                {% endif %}
+                <a href="/races" style="max-width: none; background: none; box-shadow: none; font-size: 0.78rem; color: #90a4ae;">Schedule</a>
+                {% if next_race %}
+                <a href="/races/{{ next_race.slug }}" title="{{ next_race.name }}" style="text-align: right;">{{ next_race.name }} →</a>
+                {% else %}
+                <span class="spacer"></span>
+                {% endif %}
+            </div>
+
+            {% else %}
+            <div class="alert alert-warning">Race not found.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

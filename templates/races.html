@@ -154,6 +154,27 @@ function copyToClipboard() {
     </div>
 </div>
 
+{% if next_race %}
+<div class="container mb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <a href="/races/{{ next_race.slug }}" style="text-decoration: none;">
+                <div class="card" style="border-left: 4px solid #1a237e; border-radius: 15px;">
+                    <div class="card-body d-flex align-items-center justify-content-between py-3">
+                        <div>
+                            <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: -0.2px; color: #90a4ae; margin-bottom: 0.2rem;">Next Race</div>
+                            <div style="font-family: 'Montserrat', sans-serif; font-weight: 800; color: #1a237e; font-size: 1.1rem;">{{ next_race.name }}</div>
+                            <div style="color: #546e7a; font-size: 0.9rem;">{{ next_race.date.strftime('%A, %B %-d') }}</div>
+                        </div>
+                        <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; color: #1a237e; font-size: 1.2rem;">→</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% if error %}
 <div class="alert alert-danger" role="alert">
     {{ error }}
@@ -224,7 +245,7 @@ function copyToClipboard() {
                                     {% if date_str in race_events %}
                                     <div class="event-name">
                                         {% for event in race_events[date_str] %}
-                                        {{ event }}{% if not loop.last %}<br>{% endif %}
+                                        <a href="/races/{{ date_str | replace('-', '') }}" style="color: inherit; text-decoration: none;">{{ event }}</a>{% if not loop.last %}<br>{% endif %}
                                         {% endfor %}
                                     </div>
                                     {% endif %}
@@ -265,7 +286,11 @@ function copyToClipboard() {
             {% for row in data %}
             <tr>
                 {% for cell in row %}
+                {% if loop.first %}
+                <td><a href="/races/{{ cell | date_to_slug }}" style="color: inherit; font-weight: 600;">{{ cell }}</a></td>
+                {% else %}
                 <td>{{ cell }}</td>
+                {% endif %}
                 {% endfor %}
             </tr>
             {% endfor %}
