@@ -403,6 +403,10 @@ def _render_checklist_md(text):
     text = re.sub(r'^(\s*)- \[x\] ', r'\1- <input type="checkbox" class="task-check" checked> ', text, flags=re.MULTILINE)
     return Markup(markdown.markdown(text, extensions=['tables']))
 
+@app.route('/reports/mac26-race-analysis')
+def report_mac26_race_analysis():
+    return render_template('reports/mac26-race-analysis.html')
+
 @app.route('/checklists')
 def checklists_index():
     return render_template('checklists.html', checklists=CHECKLISTS)
