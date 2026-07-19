@@ -407,6 +407,10 @@ def _render_checklist_md(text):
 def report_mac26_race_analysis():
     return render_template('reports/mac26-race-analysis.html')
 
+@app.route('/reports/mac26-race-replay')
+def report_mac26_race_replay():
+    return render_template('reports/mac26-race-replay.html')
+
 @app.route('/checklists')
 def checklists_index():
     return render_template('checklists.html', checklists=CHECKLISTS)
